@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Movie Management</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-color: #181818;
+                color: gray;
+                font-family: Arial, sans-serif;
+            }
+        
+            h1, h2 {
+                font-weight: bold;
+                color: #f5c518;
+            }
+        
+            .form-label {
+                font-size: 1rem;
+                font-weight: bold;
+            }
+        
+            .form-control {
+                background-color: #f1f1f1; /* Form kısmındaki gri renk */
+                color: #333;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+        
+            .form-control:focus {
+                border-color: #f5c518;
+                box-shadow: 0 0 5px rgba(245, 197, 24, 0.5);
+            }
+
+            .add-movie-button {
+                background-color: #28a745; /* Yeşil renk */
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+            }
+
+            .add-movie-button:hover {
+                background-color: #218838; /* Hover rengini koyulaştırıyoruz */
+                transform: scale(1.05); /* Hoverda buton biraz büyüsün */
+            }
+
+            .add-movie-button:focus {
+                outline: none;
+            }
+
+            .add-movie-button:active {
+                background-color: #1e7e34; /* Tıklama anında daha koyu bir yeşil */
+            }
+
+        
+            .btn-primary {
+                background-color: #f5c518;
+                border-color: #f5c518;
+                color: #181818;
+            }
+        
+            .btn-primary:hover {
+                background-color: #d4a917;
+                border-color: #d4a917;
+            }
+        
+            .table {
+                background-color: #202020;
+                color: #ffffff;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+        
+            .table th {
+                background-color: #282828;
+                color: #f5c518;
+                font-weight: bold;
+                text-align: center;
+            }
+        
+            .table td {
+                text-align: center;
+                vertical-align: middle;
+                border-color: #333;
+            }
+
+            .table tbody tr:hover {
+                background-color: #444;
+            }
+
+            .table tbody tr:hover td {
+                color: #f5c518;
+            }
+
+            .btn-warning {
+                background-color: #f5c518;
+                border-color: #f5c518;
+            }
+        
+            .btn-warning:hover {
+                background-color: #d4a917;
+                border-color: #d4a917;
+            }
+        
+            .btn-danger {
+                background-color: #b71c1c;
+                border-color: #b71c1c;
+            }
+        
+            .btn-danger:hover {
+                background-color: #920c0c;
+                border-color: #920c0c;
+            }
+        </style>
+        
+    </head>
+    <body>
+        <div class="container mt-5">
+
+            <h2 class="mt-5" style="color: white;">Movie List</h2>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Movie</th>
+                            <th>Director</th>
+                            <th>Rating</th>
+                            <th>Categories</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Spring model verisini burada gösterin -->
+                        <tr th:each="movie : ${MovieList}">
+                            <td th:text="${movie.movie}"></td>
+                            <td th:text="${movie.director}"></td>
+                            <td>
+                                <span th:text="${movie.rating}"></span>
+                                <i class="fas fa-star" style="color: yellow;"></i>
+                            </td>
+                            <td th:text="${movie.categories}"></td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" 
+                                        th:attr="data-id=${movie.movieId}, data-movie=${movie.movie}, data-director=${movie.director}, data-rating=${movie.rating}, data-categories=${movie.categories}" 
+                                        onclick="openEditModalWithData(this)" style="color: black;">
+                                    Edit
+                                </button>
+                                <a th:href="@{/delMovie/{id} (id=${movie.movieId})}" class="btn btn-danger btn-sm" style="color: black;">Delete</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br>
+            <button id="showFormButton" class="add-movie-button">Add Movie</button>
+
+            <!-- Yeni Film Ekleme Formu -->
+             <br>
+             <br>
+            <form id="movieForm" style="display: none;">
+                <h1 style="color: white;">Movie Form</h1>
+                <div class="mb-3">
+                    <label for="movie" class="form-label" style="color: white;">Movie</label>
+                    <input type="text" class="form-control" id="movie" name="movie" required>
+                </div>
+                <div class="mb-3">
+                    <label for="director" class="form-label" style="color: white;" >Director</label>
+                    <input type="text" class="form-control" id="director" name="director" required>
+                </div>
+                <div class="mb-3">
+                    <label for="rating" class="form-label" style="color: white;">Rating</label>
+                    <select class="form-control" id="rating" name="rating" required>
+                        <option value="" disabled selected>Select a rating</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="7.5">7.5</option>
+                        <option value="8">8</option>
+                        <option value="8.5">8.5</option>
+                        <option value="9">9</option>
+                        <option value="9.5">9.5</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="categories" class="form-label" style="color: white;">Categories</label>
+                    <select class="form-control" id="categories" name="categories" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Action film">Action film</option>
+                        <option value="Documentary film">Documentary film</option>
+                        <option value="Science fiction film">Science fiction film</option>
+                        <option value="Religious film">Religious film</option>
+                        <option value="Dramatic film">Dramatic film</option>
+                        <option value="Educational film">Educational film</option>
+                        <option value="Fantasy film">Fantasy film</option>
+                        <option value="Thriller film">Thriller film</option>
+                        <option value="Comedy film">Comedy film</option>
+                        <option value="Horror film">Horror film</option>
+                        <option value="Adventure film">Adventure film</option>
+                        <option value="Musical film">Musical film</option>
+                        <option value="Political film">Political film</option>
+                        <option value="Propaganda film">Propaganda film</option>
+                        <option value="Romantic film">Romantic film</option>
+                        <option value="War film">War film</option>
+                        <option value="Sports film">Sports film</option>
+                        <option value="Crime film">Crime film</option>
+                        <option value="Historical film">Historical film</option>
+                        <option value="Western film">Western film</option>
+                        <option value="Biographical film">Biographical film</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="background-color: rgb(245,197,24);">Save</button>
+            </form>
+            
+            
+
+        <!-- Edit Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit Movie</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="editMovieForm">
+                        <div class="modal-body">
+                            <input type="hidden" id="editMovieId" name="movieId">
+                            <div class="mb-3">
+                                <label for="editMovie" class="form-label">Movie</label>
+                                <input type="text" class="form-control" id="editMovie" name="movie" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDirector" class="form-label">Director</label>
+                                <input type="text" class="form-control" id="editDirector" name="director" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editRating" class="form-label" style="color: white;">Rating</label>
+                                <select class="form-control" id="editRating" name="rating" required>
+                                    <option value="" disabled selected>Select a rating</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="7.5">7.5</option>
+                                    <option value="8">8</option>
+                                    <option value="8.5">8.5</option>
+                                    <option value="9">9</option>
+                                    <option value="9.5">9.5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editCategories" class="form-label" style="color: white;">Categories</label>
+                                <select class="form-control" id="editCategories" name="categories" required>
+                                    <option value="" disabled selected>Select a category</option>
+                                    <option value="Action film">Action film</option>
+                                    <option value="Documentary film">Documentary film</option>
+                                    <option value="Science fiction film">Science fiction film</option>
+                                    <option value="Religious film">Religious film</option>
+                                    <option value="Dramatic film">Dramatic film</option>
+                                    <option value="Educational film">Educational film</option>
+                                    <option value="Fantasy film">Fantasy film</option>
+                                    <option value="Thriller film">Thriller film</option>
+                                    <option value="Comedy film">Comedy film</option>
+                                    <option value="Horror film">Horror film</option>
+                                    <option value="Adventure film">Adventure film</option>
+                                    <option value="Musical film">Musical film</option>
+                                    <option value="Political film">Political film</option>
+                                    <option value="Propaganda film">Propaganda film</option>
+                                    <option value="Romantic film">Romantic film</option>
+                                    <option value="War film">War film</option>
+                                    <option value="Sports film">Sports film</option>
+                                    <option value="Crime film">Crime film</option>
+                                    <option value="Historical film">Historical film</option>
+                                    <option value="Western film">Western film</option>
+                                    <option value="Biographical film">Biographical film</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.getElementById("movieForm").addEventListener("submit", function(event){
+                event.preventDefault();
+
+                let movieData = {
+                    movie: document.getElementById("movie").value,
+                    director: document.getElementById("director").value,
+                    rating: document.getElementById("rating").value,
+                    categories: document.getElementById("categories").value
+                };
+
+                fetch('/newMovie', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(movieData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Movie saved:", data);
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    window.location.reload();
+                });
+            });
+
+            function openEditModalWithData(button) {
+                const movieId = button.getAttribute("data-id");
+                const movie = button.getAttribute("data-movie");
+                const director = button.getAttribute("data-director");
+                const rating = button.getAttribute("data-rating");
+                const categories = button.getAttribute("data-categories");
+
+                document.getElementById("editMovieId").value = movieId;
+                document.getElementById("editMovie").value = movie;
+                document.getElementById("editDirector").value = director;
+                document.getElementById("editRating").value = rating;
+                document.getElementById("editCategories").value = categories;
+
+                const editModal = new bootstrap.Modal(document.getElementById("editModal"));
+                editModal.show();
+            }
+
+            document.getElementById("editMovieForm").addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                const movieId = document.getElementById("editMovieId").value;
+                const movieData = {
+                    movie: document.getElementById("editMovie").value,
+                    director: document.getElementById("editDirector").value,
+                    rating: document.getElementById("editRating").value,
+                    categories: document.getElementById("editCategories").value
+                };
+
+                fetch(`/uptMovie/${movieId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(movieData)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Update failed");
+                    }
+                })
+                .then(data => {
+                    console.log("Movie updated:", data);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    window.location.reload();
+                });
+            });
+
+            document.getElementById("showFormButton").addEventListener("click", function() {
+            var form = document.getElementById("movieForm");
+            if (form.style.display === "none") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+            });
+
+        </script>
+    </body>
+</html>
